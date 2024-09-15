@@ -1,16 +1,15 @@
 package isi.dan.msclientes.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import isi.dan.msclientes.model.Obra;
 import isi.dan.msclientes.servicios.ObraService;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -92,6 +91,61 @@ public class ObraControllerTest {
                 .andExpect(status().isNoContent());
     }
 
+    @Test
+    void testFinalizarObra() throws Exception {
+        Mockito.when(obraService.finalizarObra(1)).thenReturn(obra);
+
+        mockMvc.perform(put("/api/obras/finalizar/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.direccion").value("Direccion Test Obra"));
+    }
+
+    @Test
+    void testMarcarObraComoPendiente() throws Exception {
+        Mockito.when(obraService.marcarObraComoPendiente(1)).thenReturn(obra);
+
+        mockMvc.perform(put("/api/obras/marcar-pendiente/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.direccion").value("Direccion Test Obra"));
+    }
+
+    @Test
+    void testHabilitarObraSiCumpleCondicion() throws Exception {
+        Mockito.when(obraService.habilitarObraSiCumpleCondicion(1)).thenReturn(obra);
+
+        mockMvc.perform(put("/api/obras/habilitar/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.direccion").value("Direccion Test Obra"));
+    }
+
+    @Test
+    void testHabilitarObraSiCumpleCondicion_Conflict() throws Exception {
+        Mockito.when(obraService.habilitarObraSiCumpleCondicion(1))
+                .thenThrow(new IllegalStateException("No se puede habilitar"));
+
+        mockMvc.perform(put("/api/obras/habilitar/1"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void testFinalizarObra_NotFound() throws Exception {
+        Mockito.when(obraService.finalizarObra(1)).thenThrow(new IllegalArgumentException("No se encontró la obra"));
+
+        mockMvc.perform(put("/api/obras/finalizar/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testMarcarObraComoPendiente_NotFound() throws Exception {
+        Mockito.when(obraService.marcarObraComoPendiente(1)).thenThrow(new IllegalArgumentException("No se encontró la obra"));
+
+        mockMvc.perform(put("/api/obras/marcar-pendiente/1"))
+                .andExpect(status().isNotFound());
+    }
+
     private static String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
@@ -100,4 +154,3 @@ public class ObraControllerTest {
         }
     }
 }
-

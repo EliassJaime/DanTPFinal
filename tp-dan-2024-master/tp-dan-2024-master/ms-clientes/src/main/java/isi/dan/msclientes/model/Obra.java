@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,7 +20,11 @@ import lombok.Data;
 @Table(name = "MS_CLI_OBRA")
 @Data
 public class Obra {
-
+    public enum EstadoObra {
+        HABILITADA,
+        PENDIENTE,
+        FINALIZADA
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -39,5 +45,11 @@ public class Obra {
     @NotNull(message = "El presupuesto es obligatorio")
     @Min(value=100, message = "El presupuesto debe ser al menos de 100")
     private BigDecimal presupuesto;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ESTADO")
+    private EstadoObra estado;
+
+    
 
 }

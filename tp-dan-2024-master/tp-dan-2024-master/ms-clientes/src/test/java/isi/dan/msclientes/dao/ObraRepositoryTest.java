@@ -1,6 +1,6 @@
 package isi.dan.msclientes.dao;
+
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,8 +20,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import isi.dan.msclientes.model.Obra;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,31 +51,26 @@ public class ObraRepositoryTest {
     }
 
     @BeforeEach
-    void iniciarDatos(){
+    void setUp() {
+        // Limpiar la base de datos antes de cada prueba para garantizar un entorno limpio
+        obraRepository.deleteAll();
+
+        // Inicializar datos de prueba
         Obra obra = new Obra();
         obra.setDireccion("Test Obra 999");
         obra.setPresupuesto(BigDecimal.valueOf(100));
         obraRepository.save(obra);
     }
 
-    @BeforeEach
-    void borrarDatos(){
-        obraRepository.deleteAll();
-    }
-
-    @AfterAll
-    static void stopContainer() {
-        mysqlContainer.stop();
-    }
-
     @Test
     void testSaveAndFindById() {
         Obra obra = new Obra();
         obra.setDireccion("Test Obra");
+        obra.setPresupuesto(BigDecimal.valueOf(200));
         obraRepository.save(obra);
 
         Optional<Obra> foundObra = obraRepository.findById(obra.getId());
-        log.info("ENCONTRE: {} ",foundObra);
+        log.info("ENCONTRE: {}", foundObra);
         assertThat(foundObra).isPresent();
         assertThat(foundObra.get().getDireccion()).isEqualTo("Test Obra");
     }
@@ -88,11 +83,14 @@ public class ObraRepositoryTest {
         obraRepository.save(obra);
 
         List<Obra> resultado = obraRepository.findByPresupuestoGreaterThanEqual(BigDecimal.valueOf(50));
-        log.info("ENCONTRE: {} ",resultado);
-        assertThat(resultado.size()).isEqualTo(2);
+        log.info("ENCONTRE: {}", resultado);
+        assertThat(resultado).hasSize(2); // Debe haber 2 obras si se inicializan los datos correctamente
         assertThat(resultado.get(0).getPresupuesto()).isGreaterThan(BigDecimal.valueOf(50));
         assertThat(resultado.get(1).getPresupuesto()).isGreaterThan(BigDecimal.valueOf(50));
     }
 
+    @AfterAll
+    static void tearDown() {
+        mysqlContainer.stop();
+    }
 }
-

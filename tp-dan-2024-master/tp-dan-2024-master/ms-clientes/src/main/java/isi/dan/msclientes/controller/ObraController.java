@@ -1,6 +1,7 @@
 package isi.dan.msclientes.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,5 +53,42 @@ public class ObraController {
         }
         obraService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Endpoint para finalizar una obra
+    @PutMapping("/finalizar/{id}")
+    public ResponseEntity<Obra> finalizarObra(@PathVariable Integer id) {
+        try {
+            Obra obra = obraService.finalizarObra(id);
+            return ResponseEntity.ok(obra);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // 404 si no se encuentra la obra
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // 500 para otros errores
+        }
+    }
+
+     // Endpoint para marcar una obra como Pendiente
+     @PutMapping("/marcar-pendiente/{id}")
+     public ResponseEntity<Obra> marcarObraComoPendiente(@PathVariable Integer id) {
+         try {
+             Obra obra = obraService.marcarObraComoPendiente(id);
+             return ResponseEntity.ok(obra);
+         } catch (IllegalArgumentException e) {
+             return ResponseEntity.notFound().build();
+         }
+     }
+
+     // Endpoint para habilitar una obra si cumple las condiciones
+    @PutMapping("/habilitar/{id}")
+    public ResponseEntity<Obra> habilitarObraSiCumpleCondicion(@PathVariable Integer id) {
+        try {
+            Obra obra = obraService.habilitarObraSiCumpleCondicion(id);
+            return ResponseEntity.ok(obra);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);  // 409 Conflict si no se puede habilitar
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

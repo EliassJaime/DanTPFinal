@@ -1,19 +1,20 @@
 package isi.dan.msclientes.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import isi.dan.msclientes.exception.ClienteNotFoundException;
 import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.servicios.ClienteService;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -51,6 +52,19 @@ public class ClienteControllerTest {
     }
 
     @Test
+    void testGetEcho() throws Exception {
+        // Simula la fecha y hora para asegurar consistencia
+        Instant now = Instant.now();
+        String instancia = "test-instance";
+        String expectedResponse = now.toString() + " - " + instancia; // Ajusta el formato según la salida esperada
+    
+        mockMvc.perform(get("/api/clientes/echo"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(instancia)));
+    }
+
+    @Test
     void testGetById() throws Exception {
         Mockito.when(clienteService.findById(1)).thenReturn(Optional.of(cliente));
 
@@ -60,6 +74,7 @@ public class ClienteControllerTest {
                 .andExpect(jsonPath("$.nombre").value("Test Cliente"))
                 .andExpect(jsonPath("$.cuit").value("12998887776"));
     }
+
     @Test
     void testGetById_NotFound() throws Exception {
         Mockito.when(clienteService.findById(2)).thenReturn(Optional.empty());
@@ -92,12 +107,30 @@ public class ClienteControllerTest {
     }
 
     @Test
+    void testUpdate_NotFound() throws Exception {
+        Mockito.when(clienteService.findById(1)).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/clientes/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(cliente)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void testDelete() throws Exception {
         Mockito.when(clienteService.findById(1)).thenReturn(Optional.of(cliente));
         Mockito.doNothing().when(clienteService).deleteById(1);
 
         mockMvc.perform(delete("/api/clientes/1"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDelete_NotFound() throws Exception {
+        Mockito.when(clienteService.findById(1)).thenReturn(Optional.empty());
+
+        mockMvc.perform(delete("/api/clientes/1"))
+                .andExpect(status().isNotFound());
     }
 
     private static String asJsonString(final Object obj) {
@@ -108,4 +141,3 @@ public class ClienteControllerTest {
         }
     }
 }
-
