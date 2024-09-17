@@ -2,5 +2,15 @@
 const nextConfig = {
     output: 'standalone',
     basePath: '/ui',
-};
-export default nextConfig;
+    async rewrites() {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:6080/api/:path*', // Redirige todas las solicitudes a la URL completa del backend
+        },
+      ];
+    },
+  };
+  
+  export default nextConfig;
+  

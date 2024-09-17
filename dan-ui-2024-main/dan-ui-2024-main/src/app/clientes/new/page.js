@@ -1,31 +1,37 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-//import { CrearCliente } from "@/lib/clientes-api"; // Función simulada para agregar un producto
+import { crearCliente } from '@/lib/clientes-api'; // Asegúrate de que la ruta sea correcta
 
 export default function CrearCliente() {
   const [clientName, setClientName] = useState('');
   const [clientCuit, setCuitClient] = useState('');
   const [clientCorreo, setCorreoClient] = useState('');
   const [clientMaxDescubierto, setclientMaxDescubierto] = useState('');
-  const [clientMaxObras, setclientMaxObras] = useState('')
+  const [clientMaxObras, setclientMaxObras] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Manejar la creación del producto
   const handleCreate = async (e) => {
     e.preventDefault();
-    
+
     // Validación básica
     if (!clientName || !clientCuit || !clientCorreo || !clientMaxDescubierto || !clientMaxObras) {
       setError('Todos los campos son obligatorios');
       return;
     }
 
-    // Simulación de la creación del producto
+    // Crear el objeto cliente
+    const nuevoCliente = {
+      nombre: clientName,
+      cuit: clientCuit,
+      correoElectronico: clientCorreo,
+      maximoDescubierto: parseFloat(clientMaxDescubierto),
+      //maximoObras: parseFloat(clientMaxObras),
+    };
+
     try {
-      await crearClinte({ name: clientName, cuit: clientCuit, correo: clientCuit, maximoDescubierto: parseFloat(clientMaxDescubierto), maximoObras: parseFloat(clientMaxObras) });
+      await crearCliente(nuevoCliente);
       setSuccessMessage(`Cliente "${clientName}" creado exitosamente`);
       setClientName('');
       setCuitClient('');
@@ -68,7 +74,7 @@ export default function CrearCliente() {
         <div>
           <label htmlFor="correo">Correo del Cliente</label>
           <input
-            type="text"
+            type="email"
             id="correo"
             value={clientCorreo}
             onChange={(e) => setCorreoClient(e.target.value)}
