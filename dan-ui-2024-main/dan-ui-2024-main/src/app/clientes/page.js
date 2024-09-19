@@ -11,11 +11,7 @@ export default function Clientes() {
   const handleSearch = async () => {
     const lista = await buscarCliente(searchTerm);
     console.log(lista);
-    const dummyData = [
-      { id: 1, name: 'Client 1' },
-      { id: 2, name: 'Client 2' },
-    ];
-    setResults(dummyData.filter(client => client.name.includes(searchTerm) || client.id.toString() === searchTerm));
+    setResults(lista);
   };
 
   const handleDelete = (clientId) => {
@@ -38,30 +34,34 @@ export default function Clientes() {
         <Link href="/clientes/new">
           <button className={styles.createButton}>Crear nuevo cliente</button>
         </Link>
-        <Link href="/obras">
-          <button className={styles.createButton}>Crear nueva obra</button>
+        <Link href="/clientes/obra">
+          <button className={styles.createButton}>Administrar Obras</button>
         </Link>
         <table className={styles.clientTable}>
           <thead>
             <tr>
               <th>ID</th>
               <th>Nombre</th>
+              <th>Email</th>
+              <th>Maximo Descubierto</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {results.map(client => (
-              <tr key={client.id}>
-                <td>
-                  <Link href={`/clientes/${client.id}`}>{client.id}</Link>
-                </td>
-                <td>{client.name}</td>
-                <td>
-                  <button1 className={styles.deleteButton} onClick={() => handleDelete(client.id)}>Eliminar</button1>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+          {results.map(clientes => (
+            <tr key={clientes.id}>
+              <td>
+                <Link href={`/clientes/${clientes.id}`}>{clientes.id}</Link>
+              </td>
+              <td>{clientes.nombre}</td>
+              <td>{clientes.correoElectronico}</td>
+              <td>{clientes.maximoDescubierto}</td>
+              <td>
+                <button1 className={styles.deleteButton} onClick={() => handleDelete(obra.id)}>Eliminar</button1>
+              </td>
+            </tr>
+          ))}
+        </tbody>
         </table>
         <style jsx>{`
           button1 {

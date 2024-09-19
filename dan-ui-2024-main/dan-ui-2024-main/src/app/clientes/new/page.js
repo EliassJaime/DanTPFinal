@@ -8,7 +8,6 @@ export default function CrearCliente() {
   const [clientCuit, setCuitClient] = useState('');
   const [clientCorreo, setCorreoClient] = useState('');
   const [clientMaxDescubierto, setclientMaxDescubierto] = useState('');
-  const [clientMaxObras, setclientMaxObras] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -16,7 +15,7 @@ export default function CrearCliente() {
     e.preventDefault();
 
     // Validación básica
-    if (!clientName || !clientCuit || !clientCorreo || !clientMaxDescubierto || !clientMaxObras) {
+    if (!clientName || !clientCuit || !clientCorreo || !clientMaxDescubierto) {
       setError('Todos los campos son obligatorios');
       return;
     }
@@ -27,7 +26,6 @@ export default function CrearCliente() {
       cuit: clientCuit,
       correoElectronico: clientCorreo,
       maximoDescubierto: parseFloat(clientMaxDescubierto),
-      //maximoObras: parseFloat(clientMaxObras),
     };
 
     try {
@@ -37,7 +35,6 @@ export default function CrearCliente() {
       setCuitClient('');
       setCorreoClient('');
       setclientMaxDescubierto('');
-      setclientMaxObras('');
       setError('');
     } catch (err) {
       setError('Error al dar de alta el cliente');
@@ -87,15 +84,6 @@ export default function CrearCliente() {
             id="maxDescubierto"
             value={clientMaxDescubierto}
             onChange={(e) => setclientMaxDescubierto(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="maximaObras">Maximo cantidad de obras en ejecución</label>
-          <input
-            type="number"
-            id="maxObras"
-            value={clientMaxObras}
-            onChange={(e) => setclientMaxObras(e.target.value)}
           />
         </div>
 
