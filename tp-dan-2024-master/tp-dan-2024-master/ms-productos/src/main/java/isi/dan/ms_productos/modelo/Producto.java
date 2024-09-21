@@ -17,7 +17,7 @@ public class Producto {
     private String nombre;
     private String descripcion;
     @Column(name ="STOCK_ACTUAL")
-    private int stockActual;
+    private int stockActual=0;
     @Column(name ="STOCK_MINIMO")
     private int stockMinimo;
     private BigDecimal precio;
@@ -25,4 +25,6 @@ public class Producto {
     @Enumerated(EnumType.STRING)
     private Categoria categoria;
 
+    @Column(name = "DESCUENTO_PROMOCIONAL")
+    private BigDecimal descuentoPromocional = BigDecimal.ZERO;
 }

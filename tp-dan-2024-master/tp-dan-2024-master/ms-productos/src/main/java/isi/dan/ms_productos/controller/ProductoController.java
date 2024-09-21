@@ -10,7 +10,10 @@ import org.springframework.web.client.RestTemplate;
 
 
 import isi.dan.ms_productos.aop.LogExecutionTime;
+import isi.dan.ms_productos.dto.DescuentoUpdateDTO;
+import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
+import isi.dan.ms_productos.modelo.Categoria;
 import isi.dan.ms_productos.modelo.Producto;
 import isi.dan.ms_productos.servicio.EchoClientFeign;
 import isi.dan.ms_productos.servicio.ProductoService;
@@ -28,30 +31,11 @@ public class ProductoController {
     @Autowired
     EchoClientFeign echoSvc;
 
-
     @PostMapping
     @LogExecutionTime
     public ResponseEntity<Producto> createProducto(@RequestBody @Validated Producto producto) {
         Producto savedProducto = productoService.saveProducto(producto);
         return ResponseEntity.ok(savedProducto);
-    }
-
-    @GetMapping("/test")
-    @LogExecutionTime
-    public String getEcho() {
-        String resultado = echoSvc.echo();
-        log.info("Log en test 1!!!! {}",resultado);
-        return resultado;
-    }
-
-    @GetMapping("/test2")
-    @LogExecutionTime
-    public String getEcho2() {
-        RestTemplate restTemplate = new RestTemplate();
-        String gatewayURL = "http://ms-gateway-svc:8080";
-        String resultado = restTemplate.getForObject(gatewayURL+"/clientes/api/clientes/echo", String.class);
-        log.info("Log en test 2 {}",resultado);
-        return resultado;
     }
 
     @GetMapping
@@ -72,6 +56,28 @@ public class ProductoController {
         productoService.deleteProducto(id);
         return ResponseEntity.noContent().build();
     }
+
+@GetMapping("/categoria/{categoria}")
+@LogExecutionTime
+public ResponseEntity<List<Producto>> getProductosByCategoria(@PathVariable Categoria categoria) {
+    List<Producto> productos = productoService.getProductosByCategoria(categoria);
+    return ResponseEntity.ok(productos);
+}
+
+@PutMapping("/provision")
+@LogExecutionTime
+public ResponseEntity<Producto> actualizarStockYPrecio(@RequestBody @Validated StockUpdateDTO provisionDTO) throws ProductoNotFoundException {
+    Producto productoActualizado = productoService.actualizarStockYPrecio(provisionDTO.getIdProducto(), provisionDTO.getCantidad(), provisionDTO.getNuevoPrecio());
+    return ResponseEntity.ok(productoActualizado);
+}
+
+@PutMapping("/promocion/descuento")
+@LogExecutionTime
+public ResponseEntity<Producto> actualizarDescuentoPromocional(@RequestBody @Validated DescuentoUpdateDTO descuentoDTO) throws ProductoNotFoundException {
+    Producto productoActualizado = productoService.actualizarDescuentoPromocional(descuentoDTO.getIdProducto(), descuentoDTO.getNuevoDescuento());
+    return ResponseEntity.ok(productoActualizado);
+}
+
 
 }
 

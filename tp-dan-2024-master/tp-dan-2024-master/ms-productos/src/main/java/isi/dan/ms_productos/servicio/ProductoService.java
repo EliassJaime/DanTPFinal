@@ -11,8 +11,10 @@ import isi.dan.ms_productos.conf.RabbitMQConfig;
 import isi.dan.ms_productos.dao.ProductoRepository;
 import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
+import isi.dan.ms_productos.modelo.Categoria;
 import isi.dan.ms_productos.modelo.Producto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -46,5 +48,37 @@ public class ProductoService {
     public void deleteProducto(Long id) {
         productoRepository.deleteById(id);
     }
+
+    public List<Producto> getProductosByCategoria(Categoria categoria) {
+        return productoRepository.findByCategoria(categoria);
+    }
+
+    public Categoria[] getCategorias(){
+        return Categoria.values();
+    }
+
+    public Producto actualizarStockYPrecio(Long productoId, int cantidadStock, BigDecimal nuevoPrecio) throws ProductoNotFoundException {
+    Producto producto = productoRepository.findById(productoId)
+        .orElseThrow(() -> new ProductoNotFoundException(productoId));
+    
+    // Actualizar stock
+    producto.setStockActual(producto.getStockActual() + cantidadStock);
+    
+    // Actualizar precio
+    producto.setPrecio(nuevoPrecio);
+    
+    return productoRepository.save(producto);
+}
+public Producto actualizarDescuentoPromocional(Long productoId, BigDecimal nuevoDescuento) throws ProductoNotFoundException {
+    Producto producto = productoRepository.findById(productoId)
+        .orElseThrow(() -> new ProductoNotFoundException(productoId));
+
+    // Actualizar el descuento promocional
+    producto.setDescuentoPromocional(nuevoDescuento);
+
+    return productoRepository.save(producto);
+}
+
+
 }
 
