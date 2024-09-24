@@ -111,5 +111,9 @@ public class ObraService {
     public void deleteById(Integer id) {
         obraRepository.deleteById(id);
     }
+
+    public List<Obra> findByCliente(Cliente cliente) {
+    return obraRepository.findByCliente(cliente);
+}
 }
 

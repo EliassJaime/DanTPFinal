@@ -3,7 +3,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import isi.dan.ms.pedidos.dto.ObraDTO;
+import isi.dan.ms.pedidos.modelo.Cliente;
 import isi.dan.ms.pedidos.modelo.Pedido;
+import isi.dan.ms.pedidos.modelo.Producto;
 import isi.dan.ms.pedidos.servicio.PedidoService;
 
 import java.util.List;
@@ -37,5 +40,22 @@ public class PedidoController {
         pedidoService.deletePedido(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/clientes-disponibles")
+    public List<Cliente> getClientesDisponibles() {
+        return pedidoService.getClientesDisponibles();
+    }
+    
+    @GetMapping("/productos-disponibles")
+    public List<Producto> getProductosDisponibles() {
+        return pedidoService.getProductosDisponibles();
+    }
+
+    @GetMapping("/obras-disponibles/{id}")
+    public List<ObraDTO> getObrasCliente(@PathVariable Integer id) {
+        return pedidoService.getObrasCliente(id);
+    }
+
+    
 }
 

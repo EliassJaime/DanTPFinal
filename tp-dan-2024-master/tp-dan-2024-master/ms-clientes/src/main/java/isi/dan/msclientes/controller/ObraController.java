@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import isi.dan.msclientes.aop.LogExecutionTime;
+import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.model.Obra;
+import isi.dan.msclientes.servicios.ClienteService;
 import isi.dan.msclientes.servicios.ObraService;
 
 import java.util.List;
@@ -19,6 +21,9 @@ public class ObraController {
     @Autowired
     private ObraService obraService;
 
+    @Autowired
+    private ClienteService clienteService;
+    
     @GetMapping
     @LogExecutionTime
     public List<Obra> getAll() {
@@ -91,4 +96,16 @@ public class ObraController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/cliente/{clienteId}")
+public ResponseEntity<List<Obra>> getObrasByCliente(@PathVariable Integer clienteId) {
+    Optional<Cliente> cliente = clienteService.findById(clienteId);
+    
+    if (cliente.isPresent()) {
+        List<Obra> obras = obraService.findByCliente(cliente.get());
+        return ResponseEntity.ok(obras);
+    } else {
+        return ResponseEntity.notFound().build();
+    }
+}
 }

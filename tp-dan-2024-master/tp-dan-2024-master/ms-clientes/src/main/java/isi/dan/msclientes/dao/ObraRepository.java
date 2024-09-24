@@ -17,5 +17,7 @@ public interface ObraRepository extends JpaRepository<Obra, Integer> {
     long countByClienteAndEstado(Cliente cliente, Obra.EstadoObra estado);
      // Encuentra la primera obra pendiente de un cliente
      Optional<Obra> findFirstByClienteAndEstado(Cliente cliente, Obra.EstadoObra estado);
+
+     List<Obra> findByCliente(Cliente cliente);
 }
 
