@@ -75,4 +75,15 @@ export async function buscarObra(queryValue) {
     return [];
   }
 }
+export async function eliminarCliente(clienteId) {
+  const response = await fetch(`http://localhost:6080/api/clientes/${clienteId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
 

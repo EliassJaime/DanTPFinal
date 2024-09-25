@@ -18,29 +18,40 @@ export default function CrearProducto() {
   // Manejar la creación del producto
   const handleCreate = async (e) => {
     e.preventDefault();
-    
-    // Validación básica
+  
     if (!productName || !productDescripcion || !stockAnual || !stockMinimo || !productPrice || !categoria) {
       setError('Todos los campos son obligatorios');
       return;
     }
-
-    // Simulación de la creación del producto
+  
     try {
-      await crearProducto({ name: productName, price: parseFloat(productPrice) });
+      const newProduct = {
+        nombre: productName,
+        descripcion: productDescripcion,
+        stockActual: parseInt(stockAnual),
+        stockMinimo: parseInt(stockMinimo),
+        precio: parseFloat(productPrice),
+        categoria: categoria,  // Asegúrate de que este valor coincida con tu enum en el backend
+      };
+  
+      await crearProducto(newProduct);
       setSuccessMessage(`Producto "${productName}" creado exitosamente`);
-      setProductName('');
-      setProductDescripcion('');
-      setStockAnual('');
-      setStockMinimo('');
-      setProductPrice('');
-      setCategoria('');
-      setError('');
+      resetForm(); // Resetear el formulario
     } catch (err) {
       setError('Error al crear el producto');
+      console.error(err); // Imprimir el error en la consola
     }
+  };  
+  
+  // Resetea los campos del formulario
+  const resetForm = () => {
+    setProductName('');
+    setProductDescripcion('');
+    setStockAnual('');
+    setStockMinimo('');
+    setProductPrice('');
+    setCategoria('');
   };
-
   return (
     <>
       <h1>Crear Nuevo Producto</h1>
@@ -97,12 +108,18 @@ export default function CrearProducto() {
         </div>
         <div>
           <label htmlFor="categoria">Categoria del Producto</label>
-          <input
-            type="text"
-            id="categoria"
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-          />
+          <select
+                id="categoria"
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                >
+                <option value="">Seleccione una opción</option>
+                <option value="CEMENTOS">CEMENTOS</option>
+                <option value="PLACAS">PLACAS</option>
+                <option value="PERFILES">PERFILES</option>
+                <option value="MORTEROS">MORTEROS</option>
+                <option value="YESERIA">YESERIA</option>
+            </select>
         </div>
 
         <button type="submit">Crear Producto</button>
@@ -138,6 +155,13 @@ export default function CrearProducto() {
         button:hover {
           background-color: #005bb5;
         }
+        select {
+          padding: 10px;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          width: 100%;
+         }
       `}</style>
     </>
   );

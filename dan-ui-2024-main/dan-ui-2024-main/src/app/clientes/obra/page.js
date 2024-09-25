@@ -56,21 +56,21 @@ export default function Obras() {
               <td>{obra.esRemodelacion ? 'Sí' : 'No'}</td>
               <td>{obra.cliente.id}</td>
               <td>
-                <button1 className={styles.deleteButton} onClick={() => handleDelete(obra.id)}>Eliminar</button1>
+                <button className={styles.deleteButton} onClick={() => handleDelete(obra.id)}>Eliminar</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
       <style jsx>{`
-        button1 {
+        deleteButton {
           background-color: #ff4d4f;
           color: white;
           border: none;
           padding: 4px 8px;
           cursor: pointer;
         }
-        button1:hover {
+        deleteButton:hover {
           background-color: #d9363e;
         }
       `}</style>

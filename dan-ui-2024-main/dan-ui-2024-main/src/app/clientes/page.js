@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { buscarCliente } from "@/lib/clientes-api"; // Tu lógica de la API de clientes
+import { buscarCliente, eliminarCliente } from "@/lib/clientes-api"; // Tu lógica de la API de clientes
 import styles from './page.module.css'; // Mismo CSS que el de productos
 
 export default function Clientes() {
@@ -14,8 +14,21 @@ export default function Clientes() {
     setResults(lista);
   };
 
-  const handleDelete = (clientId) => {
-    console.log(`Client with ID ${clientId} deleted`);
+  const handleDelete = async (clienteId) => {
+    // Display confirmation prompt
+    const confirmed = window.confirm('¿Seguro que quieres eliminar este producto?');
+    
+    if (confirmed) {
+      try {
+        // Call the delete function from your API
+        await eliminarCliente(clienteId);
+        // Optionally, update the results to remove the deleted product from the list
+        setResults(results.filter(cliente => cliente.id !== clienteId));
+        console.log(`client with ID ${clienteId} deleted`);
+      } catch (error) {
+        console.error('Error al eliminar el cliente:', error);
+      }
+    }
   };
 
   return (
@@ -57,21 +70,21 @@ export default function Clientes() {
               <td>{clientes.correoElectronico}</td>
               <td>{clientes.maximoDescubierto}</td>
               <td>
-                <button1 className={styles.deleteButton} onClick={() => handleDelete(obra.id)}>Eliminar</button1>
+                <button className={styles.deleteButton} onClick={() => handleDelete(clientes.id)}>Eliminar</button>
               </td>
             </tr>
           ))}
         </tbody>
         </table>
         <style jsx>{`
-          button1 {
+          deleteButton {
           background-color: #ff4d4f;
           color: white;
           border: none;
           padding: 4px 8px;
           cursor: pointer;
         }
-        button1:hover {
+        deleteButton:hover {
           background-color: #d9363e;
         }
       `}</style>

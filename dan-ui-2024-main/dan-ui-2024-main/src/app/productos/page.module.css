@@ -84,4 +84,14 @@
   .productTable a:hover {
     text-decoration: underline;
   }
+  .deleteButton {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+    .deleteButton:hover {
+    background-color: #d9363e;
+  }
   
