@@ -2,7 +2,9 @@ package isi.dan.msclientes.servicios;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import isi.dan.msclientes.dao.ClienteRepository;
 import isi.dan.msclientes.model.Cliente;
@@ -48,4 +50,11 @@ public class ClienteService {
     public void deleteById(Integer id) {
         clienteRepository.deleteById(id);
     }
+
+    public BigDecimal verMaxDes(@PathVariable Integer id) {
+    Optional<Cliente> cliente = clienteRepository.findById(id);
+    
+    BigDecimal maxDes = cliente.get().getMaximoDescubierto();
+    return maxDes;
+}
 }

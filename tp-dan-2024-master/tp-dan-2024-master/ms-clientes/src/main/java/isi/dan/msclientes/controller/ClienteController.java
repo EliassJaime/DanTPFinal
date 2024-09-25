@@ -14,6 +14,7 @@ import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.servicios.ClienteService;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -76,5 +77,13 @@ public class ClienteController {
         clienteService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-}
 
+
+    @GetMapping("/maxdescubierto/{id}")
+    @LogExecutionTime
+    public ResponseEntity<BigDecimal> verMaxDes(@PathVariable Integer id) {
+    BigDecimal maxDes = clienteService.verMaxDes(id);
+    return ResponseEntity.ok(maxDes);
+
+}
+}

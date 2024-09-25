@@ -25,5 +25,6 @@ public class Pedido {
     @Field("detalle")
     private List<DetallePedido> detalle;
 
+    Estado estado;
 }
 
