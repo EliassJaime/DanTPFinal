@@ -31,12 +31,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="logo">
         <Link href="/">
-          <Image
-            src="/logo-utn.png"
-            alt="Logo"
-            width={50}
-            height={50}
-          />
+        <img src="/logo-utn.png" alt="Logo" width={50} height={50} />
         </Link>
       </div>
       <div className="nav-links">

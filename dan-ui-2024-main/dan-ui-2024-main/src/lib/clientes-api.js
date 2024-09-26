@@ -87,6 +87,41 @@ export async function eliminarCliente(clienteId) {
   return response.json();
 }
 
+export async function finalizarObra(obraId) {
+  const response = await fetch(`http://localhost:6080/api/obras/finalizar/${obraId}`, {
+    method: 'PUT',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function pendienteObra(obraId) {
+  const response = await fetch(`http://localhost:6080/api/obras/marcar-pendiente/${obraId}`, {
+    method: 'PUT',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+export async function habilitarObra(obraId) {
+  const response = await fetch(`http://localhost:6080/api/obras/habilitar/${obraId}`, {
+    method: 'PUT',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 
 export const actualizarCliente = async (id, updatedData) => {
   try {
@@ -109,5 +144,6 @@ export const actualizarCliente = async (id, updatedData) => {
       throw error; 
   }
 };
+
 
 
