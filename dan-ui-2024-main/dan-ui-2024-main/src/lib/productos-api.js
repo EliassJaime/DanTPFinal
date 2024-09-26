@@ -9,14 +9,14 @@
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      return data; // Asegúrate de que la estructura de datos sea la que esperas
+      return data; 
     } catch (error) {
       console.error("Error al buscar clientes:", error);
       return [];
     }
   }
   export async function crearProducto(productoData) {
-    const apiUrl = 'http://localhost:6180/api/productos'; // Asegúrate de que este sea el endpoint correcto para tu backend
+    const apiUrl = 'http://localhost:6180/api/productos'; 
     console.log(productoData)
     try {
       const response = await fetch(apiUrl, {
@@ -49,46 +49,39 @@
   
     return response.json();
   }
-  // pedidos-api.js
 
-export const actualizarStockYPrecio = async (idProducto, cantidad, nuevoPrecio) => {
-  try {
-    const response = await fetch(`http://localhost:6180/api/productos/provision`, {
+  export const actualizarStockYPrecio = async (stockUpdateDTO) => {
+    const response = await fetch('http://localhost:6180/api/productos/provision', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ idProducto, cantidad, nuevoPrecio }),
+      body: JSON.stringify(stockUpdateDTO),
     });
-
+  
     if (!response.ok) {
-      throw new Error('Error al actualizar el stock y precio');
+      const errorMessage = await response.text();
+      throw new Error(`Error al actualizar el stock y precio: ${errorMessage}`);
     }
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
+  
+    return response.json();
+  };
 
-export const actualizarDescuentoPromocional = async (idProducto, nuevoDescuento) => {
-  try {
-    const response = await fetch(`http://localhost:6180/api/productos/promocion/descuento`, {
+  export const actualizarDescuentoPromocional = async (descuentoUpdateDTO) => {
+    const response = await fetch('http://localhost:6180/api/productos/promocion/descuento', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ idProducto, nuevoDescuento }),
+      body: JSON.stringify(descuentoUpdateDTO),
     });
-
+  
     if (!response.ok) {
-      throw new Error('Error al actualizar el descuento promocional');
+      const errorMessage = await response.text();
+      throw new Error(`Error al actualizar el descuento promocional: ${errorMessage}`);
     }
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
+  
+    return response.json();
+  };
 
   

@@ -1,6 +1,6 @@
-package isi.dan.ms.pedidos.modelo;
+package isi.dan.ms.pedidos.dto;
 
-public enum Estado {
+public enum EstadoDTO {
     ACEPTADO,
     EN_PREPARACION,
     RECHAZADO, 

@@ -7,7 +7,7 @@ export async function buscarCliente(queryValue) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    return data; // Asegúrate de que la estructura de datos sea la que esperas
+    return data; 
   } catch (error) {
     console.error("Error al buscar clientes:", error);
     return [];
@@ -15,7 +15,7 @@ export async function buscarCliente(queryValue) {
 }
 
 export async function crearCliente(clienteData) {
-  const apiUrl = 'http://localhost:6080/api/clientes'; // Asegúrate de que este sea el endpoint correcto para tu backend
+  const apiUrl = 'http://localhost:6080/api/clientes'; 
   console.log(clienteData)
   try {
     const response = await fetch(apiUrl, {
@@ -38,7 +38,7 @@ export async function crearCliente(clienteData) {
   }
 }
 export async function crearObra(obraData) {
-  const apiUrl = 'http://localhost:6081/api/obras'; // Asegúrate de que este sea el endpoint correcto para tu backend
+  const apiUrl = 'http://localhost:6081/api/obras'; 
   console.log(obraData)
   try {
     const response = await fetch(apiUrl, {
@@ -69,7 +69,7 @@ export async function buscarObra(queryValue) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    return data; // Asegúrate de que la estructura de datos sea la que esperas
+    return data; 
   } catch (error) {
     console.error("Error al buscar obras:", error);
     return [];
@@ -87,7 +87,7 @@ export async function eliminarCliente(clienteId) {
   return response.json();
 }
 
-// Función para actualizar un cliente
+
 export const actualizarCliente = async (id, updatedData) => {
   try {
       const response = await fetch(`http://localhost:6080/api/clientes/${id}`, {
@@ -95,7 +95,7 @@ export const actualizarCliente = async (id, updatedData) => {
           headers: {
               'Content-Type': 'application/json',
           },
-          body: JSON.stringify(updatedData), // Convierte el objeto a JSON
+          body: JSON.stringify(updatedData), 
       });
 
       if (!response.ok) {
@@ -103,10 +103,10 @@ export const actualizarCliente = async (id, updatedData) => {
       }
 
       const data = await response.json();
-      return data; // Retorna los datos actualizados del cliente
+      return data; 
   } catch (error) {
       console.error('Error al actualizar el cliente:', error);
-      throw error; // Propaga el error para manejarlo en el componente
+      throw error; 
   }
 };
 

@@ -3,6 +3,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import isi.dan.ms.pedidos.dto.EstadoDTO;
 import isi.dan.ms.pedidos.dto.ObraDTO;
 import isi.dan.ms.pedidos.modelo.Cliente;
 import isi.dan.ms.pedidos.modelo.Pedido;
@@ -10,6 +11,7 @@ import isi.dan.ms.pedidos.modelo.Producto;
 import isi.dan.ms.pedidos.servicio.PedidoService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -56,6 +58,16 @@ public class PedidoController {
     public List<ObraDTO> getObrasCliente(@PathVariable Integer id) {
         return pedidoService.getObrasCliente(id);
     }
+    @PutMapping("/estado/{numeroPedido}")
+    public ResponseEntity<Void> actualizarEstadoPedido(@PathVariable Integer numeroPedido, @RequestBody Map<String, String> nuevoEstado) {
+        EstadoDTO estado = EstadoDTO.valueOf(nuevoEstado.get("estado"));
+        boolean actualizado = pedidoService.actualizarEstadoPedido(numeroPedido, estado);
+    
+    if (actualizado) {
+        return ResponseEntity.ok().build();
+    }
+    return ResponseEntity.notFound().build();
+}
 
     
 }

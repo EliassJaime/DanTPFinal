@@ -18,36 +18,3 @@ export default function ProductoLayout({ children }) {
     </div>
   );
 }
-
-/*export default function ProductoLayout({ children }) {
-  return (
-    <div className={styles.main}>
-      <Navbar />
-      <div className={styles.container}>
-        <Sidebar />
-        <main>{children}</main>
-      </div>
-    </div>
-  );
-}*/
-
-/*export default function ProductoLayout({ children }) {
-  return (
-    <div className={styles.main}>
-      <Navbar />
-      <div className="container">
-        <Sidebar />
-        <main>{children}</main>
-      </div>
-      <style jsx>{`
-        .container {
-          display: flex;
-        }
-        main {
-          flex: 1;
-          padding: 20px;
-        }
-      `}</style>
-    </div>
-  );
-}*/

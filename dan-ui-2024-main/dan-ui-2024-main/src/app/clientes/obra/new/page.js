@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { crearObra } from '@/lib/clientes-api'; // Asegúrate de que la ruta sea correcta
+import { crearObra } from '@/lib/clientes-api'; 
 
 export default function () {
   const [obraDireccion, setObraDireccion] = useState('');

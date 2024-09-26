@@ -84,3 +84,84 @@
   .deleteButton:hover {
     background-color: #d9363e;
   }
+  .editButton {
+    background-color: #0070f3;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .editButton:hover {
+    background-color: #005bb5;
+  }
+ /* Estilos para los detalles del pedido */
+.detallesPedidoSection {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.detallesTitulo {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.pedidoContainer {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background-color: #0070f3;
+}
+
+.pedidoId {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.productosTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.productosTable th, .productosTable td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #000000;
+}
+
+.productosTable th {
+  background-color: #000000;
+}
+
+.detalleRow:hover {
+  background-color: #005bb5;
+}
+
+/* Asegura que las tablas sean responsivas */
+.productosTable td, .productosTable th {
+  font-size: 16px;
+}
+
+.detalleRow td {
+  padding: 8px;
+}
+.saveButton {
+  background-color: #009829;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.saveButton:hover {
+  background-color: #007508;
+}
+.dropdown{
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}

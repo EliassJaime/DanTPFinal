@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { crearProducto } from "@/lib/productos-api"; // Función simulada para agregar un producto
+import { crearProducto } from "@/lib/productos-api"; 
 
 export default function CrearProducto() {
   const [productName, setProductName] = useState('');
@@ -15,7 +15,7 @@ export default function CrearProducto() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Manejar la creación del producto
+  
   const handleCreate = async (e) => {
     e.preventDefault();
   
@@ -31,19 +31,19 @@ export default function CrearProducto() {
         stockActual: parseInt(stockAnual),
         stockMinimo: parseInt(stockMinimo),
         precio: parseFloat(productPrice),
-        categoria: categoria,  // Asegúrate de que este valor coincida con tu enum en el backend
+        categoria: categoria,  
       };
   
       await crearProducto(newProduct);
       setSuccessMessage(`Producto "${productName}" creado exitosamente`);
-      resetForm(); // Resetear el formulario
+      resetForm();
     } catch (err) {
       setError('Error al crear el producto');
-      console.error(err); // Imprimir el error en la consola
+      console.error(err); 
     }
   };  
   
-  // Resetea los campos del formulario
+  
   const resetForm = () => {
     setProductName('');
     setProductDescripcion('');

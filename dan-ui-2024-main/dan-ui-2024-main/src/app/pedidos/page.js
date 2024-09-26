@@ -1,49 +1,79 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { buscarPedido, eliminarPedido} from "@/lib/pedidos-api";
+import { buscarPedido, eliminarPedido, actualizarPedido } from "@/lib/pedidos-api"; 
 import styles from './page.module.css';
 
 export default function Pedidos() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [nuevoEstado, setNuevoEstado] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); 
   const [results, setResults] = useState([]);
+  const [originalResults, setOriginalResults] = useState([]); 
+  const [editingPedido, setEditingPedido] = useState(null); 
   const [error, setError] = useState('');
 
-  const handleSearch = async () => {
-    try {
-      const lista = await buscarPedido(searchTerm);
-      console.log(lista);
-      
-      // Verifica si lista es un array o un objeto
-      if (Array.isArray(lista)) {
-        setResults(lista);
-      } else {
-        console.error('La respuesta no es un array:', lista);
-        setResults([]); // O maneja el caso según lo desees
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Error al buscar pedidos.');
+
+  useEffect(() => {
+    const fetchPedidos = async () => {
+      const lista = await buscarPedido(''); 
+      setResults(lista);
+      setOriginalResults(lista); 
+    };
+
+    fetchPedidos();
+  }, []);
+
+  
+  const handleSearch = () => {
+    if (searchTerm.trim() === '') {
+      setResults(originalResults); 
+    } else {
+     
+      const filteredResults = originalResults.filter(pedido => pedido.cliente.id.toString() === searchTerm);
+      setResults(filteredResults);
     }
   };
-  
 
   const handleDelete = async (pedidoId) => {
-    // Display confirmation prompt
-    const confirmed = window.confirm('¿Seguro que quieres eliminar este producto?');
-    
+    const confirmed = window.confirm('¿Seguro que quieres eliminar este pedido?');
     if (confirmed) {
       try {
-        // Call the delete function from your API
-        await eliminarPedido(pedidoId)
-        // Optionally, update the results to remove the deleted product from the list
+        await eliminarPedido(pedidoId);
         setResults(results.filter(pedido => pedido.id !== pedidoId));
-        console.log(`order with ID ${pedidoId} deleted`);
+        console.log(`Pedido con ID ${pedidoId} eliminado`);
       } catch (error) {
         console.error('Error al eliminar el pedido:', error);
       }
     }
   };
+
+  const handleEdit = (pedido) => {
+    setEditingPedido(pedido);
+    setNuevoEstado(pedido.estado);
+  };
+
+  const handleUpdatePedido = async (e) => {
+    e.preventDefault();
+    try {
+      const pedidoUpdateDTO = {
+        numeroPedido: editingPedido.numeroPedido, 
+        nuevoEstado: nuevoEstado,                 
+      };
+  
+      await actualizarPedido(pedidoUpdateDTO);
+  
+      setResults(results.map(pedido => 
+        pedido.id === editingPedido.id ? { ...pedido, estado: nuevoEstado } : pedido
+      ));
+  
+      
+      setEditingPedido(null);
+      console.log('Pedido actualizado');
+    } catch (error) {
+      console.error('Error al actualizar el pedido:', error);
+    }
+  };
+  
 
   return (
     <div className={styles.container}>
@@ -52,7 +82,7 @@ export default function Pedidos() {
       <div className={styles.searchSection}>
         <input 
           type="text" 
-          placeholder="Buscar por número o nombre de pedido" 
+          placeholder="Buscar por ID de cliente" 
           value={searchTerm} 
           onChange={(e) => setSearchTerm(e.target.value)} 
           className={styles.searchInput}
@@ -81,114 +111,68 @@ export default function Pedidos() {
                 <td>
                   <Link href={`/pedidos/${pedido.id}`}>{pedido.id}</Link>
                 </td>
-                <td>{pedido.fecha}</td>
+                <td>{new Date(pedido.fecha).toLocaleDateString()}</td>
                 <td>{pedido.numeroPedido}</td>
                 <td>{pedido.usuario}</td>
                 <td>{pedido.cliente.id}</td>
-                <td>{pedido.estado}</td>
                 <td>
-                  <button className={styles.deleteButton} onClick={() => handleDelete(pedido.id)}>Eliminar</button>
+                  {editingPedido?.id === pedido.id ? (
+                    <select 
+                      value={nuevoEstado} 
+                      onChange={(e) => setNuevoEstado(e.target.value)} 
+                      className={styles.dropdown}
+                    >
+                      <option value="">Seleccionar estado</option>
+                      <option value="ENTREGADO">ENTREGADO</option>
+                      <option value="CANCELADO">CANCELADO</option>
+                    </select>
+                  ) : (
+                    pedido.estado
+                  )}
+                </td>
+                <td>
+                  {editingPedido?.id === pedido.id ? (
+                    <button className={styles.saveButton} onClick={handleUpdatePedido}>Guardar</button>
+                  ) : (
+                    <>
+                      <button className={styles.editButton} onClick={() => handleEdit(pedido)}>Editar</button>
+                      <button className={styles.deleteButton} onClick={() => handleDelete(pedido.id)}>Eliminar</button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="7">No se encontraron pedidos.</td>
+              <td colSpan="7">No se encontraron pedidos para el cliente con ID {searchTerm}.</td>
             </tr>
           )}
         </tbody>
       </table>
-      <style jsx>{`
-         deleteButton {
-          background-color: #ff4d4f;
-          color: white;
-          border: none;
-          padding: 4px 8px;
-          cursor: pointer;
-        }
-        deleteButton:hover {
-          background-color: #d9363e;
-        }
-      `}</style>
+        <div className={styles.detallesPedidoSection}>
+          <h2 className={styles.detallesTitulo}>Detalles del Pedido</h2>
+          {results.map((pedido) => (
+            <div key={pedido.id} className={styles.pedidoContainer}>
+              <h3 className={styles.pedidoId}>Pedido Numero: {pedido.numeroPedido}</h3>
+              <table className={styles.productosTable}>
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pedido.detalle.map((detalleItem, index) => (
+                    <tr key={index} className={styles.detalleRow}>
+                      <td>{detalleItem.producto.nombre}</td>
+                      <td>{detalleItem.cantidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
     </div>
   );
 }
-
-
-/*'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { buscarPedido } from "@/lib/pedidos-api";
-import styles from './page.module.css';
-
-export default function Pedidos() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState([]);
-
-  const handleSearch = async () => {
-    const lista = await buscarPedido(searchTerm);
-    console.log(lista);
-    setResults(lista);
-  };
-
-  return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Pedidos</h1>
-      <div className={styles.searchSection}>
-        <input 
-          type="text" 
-          placeholder="Buscar por número o nombre de pedido" 
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
-          className={styles.searchInput}
-        />
-        <button onClick={handleSearch} className={styles.searchButton}>Buscar</button>
-      </div>
-      <Link href="/pedidos/new">
-        <button className={styles.createButton}>Crear nuevo pedido</button>
-      </Link>
-      <table className={styles.pedidosTable}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Fecha</th>
-            <th>Numero Pedido</th>
-            <th>Usuario</th>
-            <th>Cliente Id</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {results.map(pedido => (
-            <tr key={pedido.id}>
-              <td>
-                <Link href={`/pedidos/${pedido.id}`}>{pedido.id}</Link>
-              </td>
-              <td>{pedido.fecha}</td>
-              <td>{pedido.numeroPedido}</td>
-              <td>{pedido.usuario}</td>
-              <td>{pedido.cliente.id}</td>
-              <td>{pedido.estado}</td>
-              <td>
-              <button className={styles.deleteButton} onClick={() => handleDelete(pedido.id)}>Eliminar</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-       <style jsx>{`
-          deleteButton {
-          background-color: #ff4d4f;
-          color: white;
-          border: none;
-          padding: 4px 8px;
-          cursor: pointer;
-        }
-        deleteButton:hover {
-          background-color: #d9363e;
-        }
-      `}</style>
-    </div>
-  );
-}*/

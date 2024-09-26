@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { crearCliente } from '@/lib/clientes-api'; // Asegúrate de que la ruta sea correcta
+import { crearCliente } from '@/lib/clientes-api'; 
 
 export default function CrearCliente() {
   const [clientName, setClientName] = useState('');
@@ -14,13 +14,12 @@ export default function CrearCliente() {
   const handleCreate = async (e) => {
     e.preventDefault();
 
-    // Validación básica
+    
     if (!clientName || !clientCuit || !clientCorreo || !clientMaxDescubierto) {
       setError('Todos los campos son obligatorios');
       return;
     }
 
-    // Crear el objeto cliente
     const nuevoCliente = {
       nombre: clientName,
       cuit: clientCuit,

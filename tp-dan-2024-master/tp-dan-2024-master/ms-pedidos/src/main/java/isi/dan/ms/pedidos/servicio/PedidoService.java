@@ -1,13 +1,20 @@
 package isi.dan.ms.pedidos.servicio;
 
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import isi.dan.ms.pedidos.conf.RabbitMQConfig;
 import isi.dan.ms.pedidos.dao.PedidoRepository;
 import isi.dan.ms.pedidos.dto.DetallePedidoDTO;
+import isi.dan.ms.pedidos.dto.EstadoDTO;
 import isi.dan.ms.pedidos.dto.ObraDTO;
 import isi.dan.ms.pedidos.modelo.Cliente;
 import isi.dan.ms.pedidos.modelo.DetallePedido;
@@ -175,5 +182,50 @@ public class PedidoService {
 
     public List<Pedido> findPedidosByClienteId(Integer clienteId) {
         return pedidoRepository.findByClienteId(clienteId);
+    }
+
+    public boolean actualizarEstadoPedido(Integer numeroPedido, EstadoDTO nuevoEstado) {
+        Pedido pedido=pedidoRepository.findBynumeroPedido(numeroPedido);
+
+        // Creamos estructuras para cargar DetallePedidoDTO
+    List<DetallePedidoDTO> detalledto = new ArrayList<DetallePedidoDTO>();
+        
+    for (DetallePedido detalle : pedido.getDetalle()) {
+        detalledto.add(new DetallePedidoDTO(detalle.getProducto().getId(), detalle.getCantidad()));
+    }
+
+        if (nuevoEstado.equals(EstadoDTO.CANCELADO)) {
+            pedido.setEstado(Estado.CANCELADO);
+            enviarMensajeDevolverStock(detalledto);
+        } else if (nuevoEstado.equals(EstadoDTO.ENTREGADO)) {
+            pedido.setEstado(Estado.ENTREGADO);
+        }
+        // Guardar el pedido actualizado
+        pedidoRepository.save(pedido);
+        return true;
+    }
+    @Autowired
+    private ObjectMapper objectMapper;
+    // Enviar mensaje a RabbitMQ para devolver stock
+    private void enviarMensajeDevolverStock(List<DetallePedidoDTO> detalle) {
+        try {
+            // Serializar la lista de DetallePedidoDTO a JSON
+            String mensajeJson = objectMapper.writeValueAsString(detalle);
+            
+            // Crear las propiedades del mensaje
+            MessageProperties messageProperties = new MessageProperties();
+            messageProperties.setContentType("application/json");
+            
+            // Construir el mensaje
+            Message message = MessageBuilder.withBody(mensajeJson.getBytes())
+                .andProperties(messageProperties)
+                .build();
+            
+            // Enviar el mensaje a la cola
+            rabbitTemplate.send(RabbitMQConfig.STOCK_UPDATE_QUEUE, message);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            // Manejo de excepciones según sea necesario
+        }
     }
 }

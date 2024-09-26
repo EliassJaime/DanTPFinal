@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { buscarObra } from "@/lib/clientes-api"; // Lógica de la API de obras
-import styles from '../page.module.css'; // Mismo CSS que el de productos
+import { buscarObra } from "@/lib/clientes-api"; 
+import styles from '../page.module.css'; 
 
 export default function Obras() {
   const [searchTerm, setSearchTerm] = useState('');

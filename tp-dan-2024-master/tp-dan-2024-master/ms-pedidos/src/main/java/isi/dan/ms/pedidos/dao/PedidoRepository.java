@@ -8,5 +8,6 @@ import isi.dan.ms.pedidos.modelo.Pedido;
 
 public interface PedidoRepository extends MongoRepository<Pedido, String> {
     List<Pedido> findByClienteId(Integer clienteId);
+    Pedido findBynumeroPedido(Integer numeroPedido);
 }
 

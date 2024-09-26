@@ -1,9 +1,11 @@
 package isi.dan.ms.pedidos.dto;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 @Data
-public class DetallePedidoDTO {
+public class DetallePedidoDTO implements Serializable {
     
     private Long idProducto;
 
@@ -15,4 +17,5 @@ public class DetallePedidoDTO {
         this.idProducto = idProducto;
         this.cantidad = cantidad;
     }
+    
 }

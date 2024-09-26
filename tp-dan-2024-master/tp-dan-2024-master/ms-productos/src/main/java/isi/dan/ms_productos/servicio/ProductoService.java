@@ -102,6 +102,22 @@ public boolean verificarYActualizarStock(List<DetallePedidoDTO> detalles) {
 
         return stockSuficiente;
     }
+    @RabbitListener(queues = RabbitMQConfig.STOCK_UPDATE_QUEUE)
+    public void handleStockUpdate(List<DetallePedidoDTO> detalles) {
+        try {
+            devolverStock(detalles);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Manejo de excepciones según sea necesario
+        }
+    }
+    public void devolverStock(List<DetallePedidoDTO> detalles) {
+        for (DetallePedidoDTO detalle : detalles) {
+            Producto producto = productoRepository.findById(detalle.getIdProducto()).orElse(null);
+            producto.setStockActual(producto.getStockActual()+detalle.getCantidad());
+            productoRepository.save(producto);
+        }
+}
 
 }
 
