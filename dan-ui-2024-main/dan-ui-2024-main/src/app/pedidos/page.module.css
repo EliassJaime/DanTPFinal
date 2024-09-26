@@ -51,27 +51,36 @@
     background-color: #005bb5;
   }
   
-  .productTable {
+  .pedidosTable {
     width: 100%;
     border-collapse: collapse;
   }
   
-  .productTable th, .productTable td {
+  .pedidosTable th, .pedidosTable td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
   
-  .productTable tr:hover {
+  .pedidosTable tr:hover {
     background-color: #0070f3;
   }
   
-  .productTable a {
+  .pedidosTable a {
     color: #fafafa;
     text-decoration: none;
   }
   
-  .productTable a:hover {
+  .pedidosTable a:hover {
     text-decoration: underline;
   }
-  
+  .deleteButton {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .deleteButton:hover {
+    background-color: #d9363e;
+  }

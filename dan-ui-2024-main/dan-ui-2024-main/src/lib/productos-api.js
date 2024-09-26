@@ -49,4 +49,46 @@
   
     return response.json();
   }
+  // pedidos-api.js
+
+export const actualizarStockYPrecio = async (idProducto, cantidad, nuevoPrecio) => {
+  try {
+    const response = await fetch(`http://localhost:6180/api/productos/provision`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idProducto, cantidad, nuevoPrecio }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar el stock y precio');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const actualizarDescuentoPromocional = async (idProducto, nuevoDescuento) => {
+  try {
+    const response = await fetch(`http://localhost:6180/api/productos/promocion/descuento`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idProducto, nuevoDescuento }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar el descuento promocional');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
   

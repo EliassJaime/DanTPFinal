@@ -87,3 +87,27 @@ export async function eliminarCliente(clienteId) {
   return response.json();
 }
 
+// Función para actualizar un cliente
+export const actualizarCliente = async (id, updatedData) => {
+  try {
+      const response = await fetch(`http://localhost:6080/api/clientes/${id}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedData), // Convierte el objeto a JSON
+      });
+
+      if (!response.ok) {
+          throw new Error('Error en la actualización del cliente');
+      }
+
+      const data = await response.json();
+      return data; // Retorna los datos actualizados del cliente
+  } catch (error) {
+      console.error('Error al actualizar el cliente:', error);
+      throw error; // Propaga el error para manejarlo en el componente
+  }
+};
+
+

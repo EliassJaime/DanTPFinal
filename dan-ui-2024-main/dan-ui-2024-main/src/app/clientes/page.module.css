@@ -87,6 +87,24 @@
   .deleteButton:hover {
     background-color: #d9363e;
   }
-  
-  
+  .editButton {
+    background-color: #0070f3;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .editButton:hover {
+    background-color: #005bb5;
+  }
+  .saveButton {
+    background-color: #009829;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .saveButton:hover {
+    background-color: #007508;
+  }
   

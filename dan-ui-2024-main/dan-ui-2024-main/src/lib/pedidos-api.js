@@ -1,17 +1,16 @@
-export async function buscarPedido(queryValue, limit, offset = 0) {
-    const apiUrl = `/pedido/api/pedidos`;
-    console.log('querying to ',apiUrl);
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data.results;
-    } catch (error) {
-      console.error("Failed to fetch pedidos:", error);
-    }
+export const buscarPedido = async (searchTerm) => {
+  const response = await fetch(`http://localhost:6280/api/pedidos?search=${searchTerm}`);
+  const data = await response.json();
+  
+  console.log("Data desde la API:", data); // Agregar este log para ver la respuesta
+  
+  if (!response.ok) {
+    throw new Error('Error en la búsqueda de pedidos');
   }
+
+  return data; // Asegúrate de que esta sea la estructura correcta
+};
+
 
   export async function crearPedido(pedidoData) {
     const apiUrl = 'http://localhost:6280/api/pedidos'; // Asegúrate de que este sea el endpoint correcto para tu backend
@@ -127,4 +126,15 @@ export async function buscarPedido(queryValue, limit, offset = 0) {
       throw error;
     }
   };*/
+  export async function eliminarPedido(pedidoId) {
+    const response = await fetch(`http://localhost:6280/api/pedidos/${pedidoId}`, {
+      method: 'DELETE',
+    });
+  
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  
+    return response.json();
+  }
 

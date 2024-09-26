@@ -9,9 +9,9 @@ export default function CrearPedido() {
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [pedido, setPedido] = useState([]); // To hold selected products
   const [observaciones, setObservaciones] = useState('');
-  const [usuario, setUsuario] = useState('johndoe'); // Example static user
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [createdOrder, setCreatedOrder] = useState(null);
 
   // Fetch clientes and productos
   useEffect(() => {
@@ -39,18 +39,29 @@ export default function CrearPedido() {
   }, []);
 
   // Fetch obras for selected cliente
-  const handleClienteChange = async (e) => {
-    const clienteId = e.target.value;
-    setSelectedCliente(clienteId);
-    setObras([]); // Clear obras before fetching
-
-    try {
-      const obrasDisponibles = await getObrasDisponibles(clienteId);
-      setObras(obrasDisponibles);
-    } catch (err) {
-      setError('Error al cargar las obras del cliente.');
+  const handleClienteChange = (e) => {
+    const clienteId = parseInt(e.target.value, 10); // Convertir a número si es necesario
+    console.log("Cliente seleccionado ID:", clienteId); // Verificar el ID que estás obteniendo
+  
+    const clienteSeleccionado = clientes.find((cliente) => cliente.id === clienteId);
+    console.log("Cliente seleccionado:", clienteSeleccionado); // Verificar si se encuentra el cliente
+    setSelectedCliente(clienteSeleccionado); // Guardar el cliente seleccionado
+  
+    // Si seleccionaste un cliente, buscar las obras
+    if (clienteSeleccionado) {
+      setObras([]); // Limpiar obras antes de cargar nuevas
+      getObrasDisponibles(clienteId)
+        .then((obrasDisponibles) => {
+          setObras(obrasDisponibles);
+        })
+        .catch(() => {
+          setError('Error al cargar las obras del cliente.');
+        });
     }
   };
+  
+  
+
 
   // Add a product to the order
   const handleAddProduct = (producto) => {
@@ -86,10 +97,13 @@ export default function CrearPedido() {
     }
 
     const nuevoPedido = {
-      usuario,
+      usuario: selectedCliente.nombre,
       observaciones,
       cliente: {
-        id: selectedCliente
+        id: selectedCliente.id,
+        nombre: selectedCliente.nombre,
+        correoElectronico: selectedCliente.correoElectronico,
+        cuit: selectedCliente.cuit
       },
       detalle: pedido.map((p) => ({
         producto: {
@@ -128,17 +142,17 @@ export default function CrearPedido() {
       <div className="searchSection">
         <label htmlFor="cliente">Seleccionar Cliente:</label>
         <select
-          id="cliente"
-          onChange={handleClienteChange}
-          value={selectedCliente || ''}
-          className="searchInput"
-        >
-          <option value="">Selecciona un cliente</option>
-          {clientes.map((cliente) => (
-            <option key={cliente.id} value={cliente.id}>
-              {cliente.correoElectronico}
-            </option>
-          ))}
+            id="cliente"
+            onChange={handleClienteChange}
+            value={selectedCliente?.id || ''} // Usar `selectedCliente?.id` si es null
+            className="searchInput"
+          >
+            <option value="">Selecciona un cliente</option>
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>
+                {cliente.correoElectronico} {/* Mostrar el correo pero enviar el id */}
+              </option>
+            ))}
         </select>
       </div>
 
@@ -209,7 +223,7 @@ export default function CrearPedido() {
       </div>
 
       <button className="createButton" onClick={handleSubmit}>Crear Pedido</button>
-
+ 
       <style jsx>{`
         .container {
           padding: 20px;
