@@ -151,6 +151,7 @@ export default function Sidebar() {
           font-size: 30px;
           cursor: pointer;
           color: #fff;
+          padding-rigth:10px;
         }
 
         .sidebar {

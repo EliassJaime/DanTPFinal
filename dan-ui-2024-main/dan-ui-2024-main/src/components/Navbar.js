@@ -31,7 +31,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="logo">
         <Link href="/">
-        <img src="/logo-utn.png" alt="Logo" width={50} height={50} />
+        <img src="logo-utn.png" alt="Logo" width={150} height={30} />
         </Link>
       </div>
       <div className="nav-links">
@@ -49,6 +49,8 @@ const Navbar = () => {
           color: white;
         }
         .logo img {
+
+          padding-left: 20px;
           display: block;
         }
         .nav-links {
