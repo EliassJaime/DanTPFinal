@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import isi.dan.ms.pedidos.conf.RabbitMQConfig;
 import isi.dan.ms.pedidos.dao.PedidoRepository;
+import isi.dan.ms.pedidos.dto.DetallePedidoDTO;
 import isi.dan.ms.pedidos.dto.ObraDTO;
 import isi.dan.ms.pedidos.modelo.Cliente;
 import isi.dan.ms.pedidos.modelo.DetallePedido;
@@ -16,6 +17,7 @@ import isi.dan.ms.pedidos.modelo.Producto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,9 +75,19 @@ public class PedidoService {
             .block();
     }
 
+    public boolean actualizarStockProducto(List<DetallePedidoDTO> detalles) {
+        return webClientBuilder.build()
+            .put()
+            .uri("http://ms-productos-svc-1:8080/api/productos/stockpedido")
+            .bodyValue(detalles)  
+            .retrieve()
+            .bodyToMono(Boolean.class)  
+            .block();  
+    }
+
     public Pedido savePedido(Pedido pedido) {
 
-        // Asignar número de pedido (puedes usar el total de pedidos + 1 como número secuencial)
+    // Asignar número de pedido
     Integer numeroPedido = pedidoRepository.findAll().size() + 1;
     pedido.setNumeroPedido(numeroPedido);
 
@@ -85,7 +97,11 @@ public class PedidoService {
     // Calcular el monto total del pedido
     BigDecimal totalPedido = BigDecimal.ZERO;
 
+    // Creamos estructuras para cargar DetallePedidoDTO
+    List<DetallePedidoDTO> detalledto = new ArrayList<DetallePedidoDTO>();
+
     for (DetallePedido detalle : pedido.getDetalle()) {
+        detalledto.add(new DetallePedidoDTO(detalle.getProducto().getId(), detalle.getCantidad()));
         // Calcular el monto total de cada línea de detalle (cantidad * precioUnitario - descuento)
         BigDecimal subtotal = detalle.getPrecioUnitario().multiply(BigDecimal.valueOf(detalle.getCantidad()));
         if (detalle.getDescuento() != null) {
@@ -100,10 +116,11 @@ public class PedidoService {
     // Asignar el total del pedido
     pedido.setTotal(totalPedido);
 
-    
      // Verificar saldo disponible del cliente
      BigDecimal maxDes = buscarMaximoDescubierto(pedido.getCliente().getId());
 
+    // Buscamos todos los pedidos asignados al cliente y sumamos el monto de todos los pedidos que esteen EN_PREPARACION 
+    // o ACEPTADO
      List<Pedido> pedidosCliente= findPedidosByClienteId(pedido.getCliente().getId());
      BigDecimal montoTodosPedidos=BigDecimal.ZERO;
      for (Pedido pedidoCliente : pedidosCliente) {
@@ -113,15 +130,26 @@ public class PedidoService {
         montoTodosPedidos = montoTodosPedidos.add(pedidoCliente.getTotal());
     }}
 
+    // Si el monto de todos los pedidos del cliente + el del pedido actual es menor al maximo descubierto del cliente
+    // ponemos el pedido con estado RECHAZADO.
     if(montoTodosPedidos.add(totalPedido).compareTo(maxDes) > 0){
-       // Si no tiene saldo, marcar el pedido como RECHAZADO
        pedido.setEstado(Estado.RECHAZADO);
        return pedidoRepository.save(pedido);
     }
+        
+    // Validamos y actualizamos el stock de los productos 
+    System.out.println("Detalles del pedido enviados: " + detalledto);
+    boolean stockSuficiente = actualizarStockProducto(detalledto);
+
+    // Si actualizamos todos los productos correctamente, seteamos el pedido con estado EN_PREPARACION
+    if(stockSuficiente){
+    pedido.setEstado(Estado.EN_PREPARACION);
+    return pedidoRepository.save(pedido);
+    }
+    // Caso contrario, lo seteamos con estado ACEPTADO
+
+
     pedido.setEstado(Estado.ACEPTADO);
-    
-    // Aquí agregas la lógica para verificar saldo, actualizar stock, etc.
-    
     // Enviar detalles de stock a RabbitMQ (lo que ya tienes)
     for (DetallePedido dp : pedido.getDetalle()) {
         log.info("Enviando {}", dp.getProducto().getId() + ";" + dp.getCantidad());

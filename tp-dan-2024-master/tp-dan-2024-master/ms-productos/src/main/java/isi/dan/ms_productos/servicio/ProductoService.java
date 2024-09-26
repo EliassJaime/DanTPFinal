@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import isi.dan.ms_productos.conf.RabbitMQConfig;
 import isi.dan.ms_productos.dao.ProductoRepository;
+import isi.dan.ms_productos.dto.DetallePedidoDTO;
 import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
 import isi.dan.ms_productos.modelo.Categoria;
@@ -78,7 +79,29 @@ public Producto actualizarDescuentoPromocional(Long productoId, BigDecimal nuevo
 
     return productoRepository.save(producto);
 }
+public boolean verificarYActualizarStock(List<DetallePedidoDTO> detalles) {
+        boolean stockSuficiente = true;
 
+        // Validar el stock de cada producto
+        for (DetallePedidoDTO detalle : detalles) {
+            Producto producto = productoRepository.findById(detalle.getIdProducto()).orElse(null);
+            if (producto == null || (producto.getStockActual()-detalle.getCantidad()) < 0) {
+                stockSuficiente = false;
+                break;  // Si algún producto no tiene suficiente stock, no es necesario continuar
+            }
+        }
+
+        // Si hay stock suficiente, actualizar el stock
+        if (stockSuficiente) {
+            for (DetallePedidoDTO detalle : detalles) {
+                Producto producto = productoRepository.findById(detalle.getIdProducto()).orElse(null);
+                producto.setStockActual(producto.getStockActual()-detalle.getCantidad());
+                productoRepository.save(producto);
+            }
+        }
+
+        return stockSuficiente;
+    }
 
 }
 

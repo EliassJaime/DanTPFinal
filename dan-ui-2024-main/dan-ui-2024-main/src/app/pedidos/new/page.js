@@ -1,165 +1,500 @@
 'use client';
-
-import Link from 'next/link';
-import { useState } from 'react';
-//import { CrearCliente } from "@/lib/clientes-api"; // Función simulada para agregar un producto
+import { useState, useEffect } from 'react';
+import { getClientesDisponibles, getProductosDisponibles, getObrasDisponibles, crearPedido } from '@/lib/pedidos-api'; // Assumed that crearPedido function is defined in api-pedidos.js
 
 export default function CrearPedido() {
-  const [fechaPedido, setFecha] = useState('');
-  const [numeroPedido, setNumeroPedido] = useState('');
-  const [userPedido, setUser] = useState('');
-  const [observacionesPedido, setobservacionesPedido] = useState('');
-  const [clientePedido, setClientePedido] = useState('');
-  const [obraPedido, setObraPedido] = useState('');
-  const [estadosPedido, setEstadosPedidos] = useState('');
-  const [totalPedido, setTotalPedido] = useState('');
+  const [clientes, setClientes] = useState([]);
+  const [obras, setObras] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [pedido, setPedido] = useState([]); // To hold selected products
+  const [observaciones, setObservaciones] = useState('');
+  const [usuario, setUsuario] = useState('johndoe'); // Example static user
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Manejar la creación del producto
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    
-    // Validación básica
-    if (!fechaPedido || !numeroPedido || !userPedido || !observacionesPedido || !obraPedido || !clientePedido || !estadosPedido || !totalPedido) {
-      setError('Todos los campos son obligatorios');
+  // Fetch clientes and productos
+  useEffect(() => {
+    const fetchClientes = async () => {
+      try {
+        const clientesDisponibles = await getClientesDisponibles();
+        setClientes(clientesDisponibles);
+        console.log(clientesDisponibles);
+      } catch (err) {
+        setError('Error al cargar los clientes.');
+      }
+    };
+
+    const fetchProductos = async () => {
+      try {
+        const productosDisponibles = await getProductosDisponibles();
+        setProductos(productosDisponibles);
+      } catch (err) {
+        setError('Error al cargar los productos.');
+      }
+    };
+
+    fetchClientes();
+    fetchProductos();
+  }, []);
+
+  // Fetch obras for selected cliente
+  const handleClienteChange = async (e) => {
+    const clienteId = e.target.value;
+    setSelectedCliente(clienteId);
+    setObras([]); // Clear obras before fetching
+
+    try {
+      const obrasDisponibles = await getObrasDisponibles(clienteId);
+      setObras(obrasDisponibles);
+    } catch (err) {
+      setError('Error al cargar las obras del cliente.');
+    }
+  };
+
+  // Add a product to the order
+  const handleAddProduct = (producto) => {
+    const existingProduct = pedido.find((p) => p.id === producto.id);
+    if (existingProduct) {
+      updateProductQuantity(producto.id, 1);
+    } else {
+      setPedido([...pedido, { ...producto, cantidad: 1, precioUnitario: producto.precio, precioFinal: producto.precio }]);
+    }
+  };
+
+  // Update product quantity in the order
+  const updateProductQuantity = (productoId, delta) => {
+    const updatedPedido = pedido.map((p) => {
+      if (p.id === productoId) {
+        const nuevaCantidad = Math.max(0, p.cantidad + delta);
+        return {
+          ...p,
+          cantidad: nuevaCantidad,
+          precioFinal: nuevaCantidad * p.precioUnitario
+        };
+      }
+      return p;
+    });
+    setPedido(updatedPedido);
+  };
+
+  // Submit the order
+  const handleSubmit = async () => {
+    if (!selectedCliente || pedido.length === 0) {
+      setError('Debes seleccionar un cliente y agregar al menos un producto.');
       return;
     }
 
-    // Simulación de la creación del producto
+    const nuevoPedido = {
+      usuario,
+      observaciones,
+      cliente: {
+        id: selectedCliente
+      },
+      detalle: pedido.map((p) => ({
+        producto: {
+          id: p.id,
+          nombre: p.nombre,
+          descripcion: p.descripcion,
+          stockActual: p.stockActual,
+          stockMinimo: p.stockMinimo,
+          precio: p.precio
+        },
+        cantidad: p.cantidad,
+        precioUnitario: p.precioUnitario,
+        descuento: 0, // Assuming no discount
+        precioFinal: p.precioFinal
+      }))
+    };
+
     try {
-      await CrearPedido({ fecha: fechaPedido, numeroPedido: numeroPedido, user: userPedido, observaciones: observacionesPedido, obras: obraPedido, cliente: clientePedido, estados: estadosPedido, total:totalPedido  });
-      setSuccessMessage(`Pedido "${numeroPedido}" creado exitosamente`);
-      setFecha('');
-      setNumeroPedido('');
-      setUser('');
-      setobservacionesPedido('');
-      setObraPedido('');
-      setClientePedido('');
-      setEstadosPedidos('');
-      setTotalPedido('');
-      setError('');
-    } catch (err) {
-      setError('Error al dar de alta el cliente');
+      await crearPedido(nuevoPedido);
+      setSuccessMessage('Pedido creado exitosamente.');
+      setPedido([]); // Clear selected products
+    } catch (error) {
+      setError('Error al crear el pedido.');
+      console.error(error);
     }
   };
 
   return (
-    <>
-      <h1>Crear Nuevo Pedido</h1>
+    <div className="container">
+      <h1 className="title">Crear Pedido</h1>
 
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
+      {successMessage && <p className="success">{successMessage}</p>}
 
-      <form onSubmit={handleCreate}>
-        <div>
-          <label htmlFor="fecha">Fecha del pedido</label>
-          <input
-            type="text"
-            id="fecha"
-            value={Date}
-            onChange={(e) => setFecha(e.target.value)}
-          />
-        </div>
+      {/* Client Dropdown */}
+      <div className="searchSection">
+        <label htmlFor="cliente">Seleccionar Cliente:</label>
+        <select
+          id="cliente"
+          onChange={handleClienteChange}
+          value={selectedCliente || ''}
+          className="searchInput"
+        >
+          <option value="">Selecciona un cliente</option>
+          {clientes.map((cliente) => (
+            <option key={cliente.id} value={cliente.id}>
+              {cliente.correoElectronico}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div>
-          <label htmlFor="nuemeroPedido">Numero del pedido</label>
-          <input
-            type="number"
-            id="numeroPedido"
-            value={numeroPedido}
-            onChange={(e) => setNumeroPedido(e.target.value)}
-          />
+      {selectedCliente && (
+        <div className="searchSection">
+          <label>Obras del Cliente:</label>
+          <table className="clientTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Dirección</th>
+                <th>Estado</th>
+                <th>Presupuesto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {obras.map((obra) => (
+                <tr key={obra.id}>
+                  <td>{obra.id}</td>
+                  <td>{obra.direccion}</td>
+                  <td>{obra.estado}</td>
+                  <td>{obra.presupuesto}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div>
-          <label htmlFor="user">Usuario del pedido</label>
-          <input
-            type="text"
-            id="user"
-            value={userPedido}
-            onChange={(e) => setUser(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="observaciones">Observaciones</label>
-          <input
-            type="text"
-            id="observaciones"
-            value={observacionesPedido}
-            onChange={(e) => setobservacionesPedido(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="obrasPedido">A que obra esta asociada este pedido</label>
-          <input
-            type="text"
-            id="obraPedido"
-            value={obraPedido}
-            onChange={(e) => setObraPedido(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="clientePedido">A que cliente esta asociado este pedido</label>
-          <input
-            type="text"
-            id="clientePedido"
-            value={clientePedido}
-            onChange={(e) => setClientePedido(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="estadoPedido">Estado en el que se encuentra el pedido</label>
-          <input
-            type="text"
-            id="estadoPedido"
-            value={estadosPedido}
-            onChange={(e) => setEstadosPedidos(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="totalPedido">Total del pedido</label>
-          <input
-            type="number"
-            id="totalPedido"
-            value={totalPedido}
-            onChange={(e) => setTotalPedido(e.target.value)}
-          />
-        </div>
+      )}
 
-        <button type="submit">Dar de alta Cliente</button>
-      </form>
+      {/* Products Section */}
+      <div className="searchSection">
+        <label>Seleccionar Productos:</label>
+        <ul className="clientTable">
+          {productos.map((producto) => (
+            <li key={producto.id}>
+              {producto.nombre} - ${producto.precio}
+              <button className="createButton" onClick={() => handleAddProduct(producto)}>Agregar</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Selected Products */}
+      {pedido.length > 0 && (
+        <div className="searchSection">
+          <h3>Productos Seleccionados:</h3>
+          <ul className="clientTable">
+            {pedido.map((p) => (
+              <li key={p.id}>
+                {p.nombre} - Cantidad: {p.cantidad} - Precio Final: ${p.precioFinal.toFixed(2)}
+                <button className="createButton" onClick={() => updateProductQuantity(p.id, 1)}>+</button>
+                <button className="createButton" onClick={() => updateProductQuantity(p.id, -1)}>-</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Observations Section */}
+      <div className="searchSection">
+        <label htmlFor="observaciones">Observaciones:</label>
+        <textarea
+          id="observaciones"
+          value={observaciones}
+          onChange={(e) => setObservaciones(e.target.value)}
+          className="searchInput"
+        ></textarea>
+      </div>
+
+      <button className="createButton" onClick={handleSubmit}>Crear Pedido</button>
 
       <style jsx>{`
-        form {
+        .container {
+          padding: 20px;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+        
+        .title {
+          font-size: 2rem;
+          margin-bottom: 20px;
+        }
+        
+        .searchSection {
           display: flex;
           flex-direction: column;
-          gap: 20px;
-          margin-top: 20px;
-          max-width: 500px;
+          margin-bottom: 20px;
         }
-        label {
-          font-size: 1.2rem;
-          margin-bottom: 5px;
-        }
-        input {
+        
+        .searchInput {
+          flex: 1;
           padding: 10px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
+          border: 1px solid #ddd;
           border-radius: 4px;
-          width: 100%;
+          margin-top: 10px;
         }
-        button {
-          background-color: #0070f3;
-          color: white;
+        
+        .clientTable {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        
+        .clientTable th,
+        .clientTable td {
+          padding: 10px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
+        
+        .createButton {
+          margin-top: 10px;
           padding: 10px 20px;
           border: none;
+          border-radius: 100px;
+          background-color: #0070f3;
+          color: white;
           cursor: pointer;
-          font-size: 1rem;
+          transition: background-color 0.3s ease;
         }
-        button:hover {
+        
+        .createButton:hover {
           background-color: #005bb5;
         }
+        
+        .error {
+          color: red;
+        }
+        
+        .success {
+          color: green;
+        }
       `}</style>
-    </>
+    </div>
   );
 }
+/*'use client';
+
+import { useState, useEffect } from 'react';
+import { getClientesDisponibles, getProductosDisponibles, getObrasDisponibles } from '@/lib/pedidos-api'; // Supongo que estas funciones están definidas en api-pedidos.js
+
+export default function CrearPedido() {
+  const [clientes, setClientes] = useState([]);
+  const [obras, setObras] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [pedido, setPedido] = useState([]);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Fetch clientes and productos
+  useEffect(() => {
+    const fetchClientes = async () => {
+      try {
+        const clientesDisponibles = await getClientesDisponibles();
+        setClientes(clientesDisponibles);
+        console.log(clientesDisponibles);
+      } catch (err) {
+        setError('Error al cargar los clientes.');
+      }
+    };
+    
+    const fetchProductos = async () => {
+      try {
+        const productosDisponibles = await getProductosDisponibles();
+        setProductos(productosDisponibles);
+      } catch (err) {
+        setError('Error al cargar los productos.');
+      }
+    };
+
+    fetchClientes();
+    fetchProductos();
+  }, []);
+
+  // Fetch obras for selected cliente
+  const handleClienteChange = async (e) => {
+    const clienteId = e.target.value;
+    setSelectedCliente(clienteId);
+    console.log("Cliente seleccionado:", clienteId); 
+    setObras([]); // Limpiar obras antes de hacer el fetch
+
+    try {
+      const obrasDisponibles = await getObrasDisponibles(clienteId);
+      setObras(obrasDisponibles);
+    } catch (err) {
+      setError('Error al cargar las obras del cliente.');
+    }
+  };
+
+  // Update product quantity in the order
+  const updateProductQuantity = (productoId, delta) => {
+    const updatedPedido = pedido.map((p) => {
+      if (p.id === productoId) {
+        return { ...p, cantidad: Math.max(0, p.cantidad + delta) };
+      }
+      return p;
+    });
+    setPedido(updatedPedido);
+  };
+
+  // Add a product to the order
+  const handleAddProduct = (producto) => {
+    const existingProduct = pedido.find((p) => p.id === producto.id);
+    if (existingProduct) {
+      updateProductQuantity(producto.id, 1);
+    } else {
+      setPedido([...pedido, { ...producto, cantidad: 1 }]);
+    }
+  };
+
+  return (
+    <div className="container">
+      <h1 className="title">Crear Pedido</h1>
+
+      {error && <p className="error">{error}</p>}
+      {successMessage && <p className="success">{successMessage}</p>}
+
+      {/* Client Dropdown *//*}
+      <div className="searchSection">
+        <label htmlFor="cliente">Seleccionar Cliente:</label>
+        <select
+          id="cliente"
+          onChange={handleClienteChange} // Llama a la API de obras cuando se selecciona un cliente
+          value={selectedCliente || ''}
+          className="searchInput"
+        >
+          <option value="">Selecciona un cliente</option>
+          {clientes.map((cliente) => (
+            <option key={cliente.id} value={cliente.id}>
+              {cliente.correoElectronico}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {selectedCliente && (
+  <div className="searchSection">
+    <label>Obras del Cliente:</label>
+    <table className="clientTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Dirección</th>
+          <th>Estado</th>
+          <th>Presupuesto</th>
+        </tr>
+      </thead>
+      <tbody>
+        {obras.map((obra) => (
+          <tr key={obra.id}>
+            <td>{obra.id}</td>
+            <td>{obra.direccion}</td>
+            <td>{obra.estado}</td>
+            <td>{obra.presupuesto}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
+
+      {/* Products Section *//*/*}
+      <div className="searchSection">
+        <label>Seleccionar Productos:</label>
+        <ul className="clientTable">
+          {productos.map((producto) => (
+            <li key={producto.id}>
+              {producto.nombre} - ${producto.precio}
+              <button className="createButton" onClick={() => handleAddProduct(producto)}>Agregar</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Selected Products *//*}
+      {pedido.length > 0 && (
+        <div className="searchSection">
+          <h3>Productos Seleccionados:</h3>
+          <ul className="clientTable">
+            {pedido.map((p) => (
+              <li key={p.id}>
+                {p.nombre} - Cantidad: {p.cantidad}
+                <button className="createButton" onClick={() => updateProductQuantity(p.id, 1)}>+</button>
+                <button className="createButton" onClick={() => updateProductQuantity(p.id, -1)}>-</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <button className="createButton" onClick={() => console.log('Submit Pedido:', pedido)}>Crear Pedido</button>
+
+      <style jsx>{`
+        .container {
+          padding: 20px;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+        
+        .title {
+          font-size: 2rem;
+          margin-bottom: 20px;
+        }
+        
+        .searchSection {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 20px;
+        }
+        
+        .searchInput {
+          flex: 1;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          margin-top: 10px;
+        }
+        
+        .clientTable {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        
+        .clientTable th,
+        .clientTable td {
+          padding: 10px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
+        
+        .createButton {
+          margin-top: 10px;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 100px;
+          background-color: #0070f3;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+        
+        .createButton:hover {
+          background-color: #005bb5;
+        }
+        
+        .error {
+          color: red;
+        }
+        
+        .success {
+          color: green;
+        }
+      `}</style>
+    </div>
+  );
+}*/

@@ -11,11 +11,11 @@ import org.springframework.web.client.RestTemplate;
 
 import isi.dan.ms_productos.aop.LogExecutionTime;
 import isi.dan.ms_productos.dto.DescuentoUpdateDTO;
+import isi.dan.ms_productos.dto.DetallePedidoDTO;
 import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
 import isi.dan.ms_productos.modelo.Categoria;
 import isi.dan.ms_productos.modelo.Producto;
-import isi.dan.ms_productos.servicio.EchoClientFeign;
 import isi.dan.ms_productos.servicio.ProductoService;
 
 import java.util.List;
@@ -27,9 +27,6 @@ public class ProductoController {
     private ProductoService productoService;
 
     Logger log = LoggerFactory.getLogger(ProductoController.class);
-
-    @Autowired
-    EchoClientFeign echoSvc;
 
     @PostMapping
     @LogExecutionTime
@@ -77,6 +74,14 @@ public ResponseEntity<Producto> actualizarDescuentoPromocional(@RequestBody @Val
     Producto productoActualizado = productoService.actualizarDescuentoPromocional(descuentoDTO.getIdProducto(), descuentoDTO.getNuevoDescuento());
     return ResponseEntity.ok(productoActualizado);
 }
+
+@PutMapping("/stockpedido")
+@LogExecutionTime
+    public ResponseEntity<Boolean> verificarYActualizarStock(@RequestBody @Validated List<DetallePedidoDTO> detalles)throws ProductoNotFoundException {
+        System.out.println("Detalles del pedido recibidos: " + detalles);
+        boolean stockSuficiente = productoService.verificarYActualizarStock(detalles);
+        return ResponseEntity.ok(stockSuficiente);
+    }
 
 
 }
